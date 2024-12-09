@@ -2,7 +2,7 @@ Simple redis serialization protocol ([RESP](https://deploy-preview-1964--redis-d
 
 # Install
 ```
-go get github.com/SpectralJager/resp@latest
+go get github.com/SpectralJager/resp
 ```
 
 # Usage
