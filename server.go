@@ -13,6 +13,15 @@ import (
 type Handler func(ctx Context) Value
 type ServerOption func(s *Server)
 
+func WriteResp(w io.Writer, val Resp) error {
+	bytes := val.Marshall()
+	_, err := w.Write(bytes)
+	if err != nil {
+		return fmt.Errorf("can't write value: %w", err)
+	}
+	return nil
+}
+
 type Server struct {
 	handlers map[string]Handler
 }
