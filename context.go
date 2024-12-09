@@ -1,14 +1,10 @@
-package goredis
+package resp
 
 import "context"
 
 type Context struct {
 	context.Context
 	command Value
-}
-
-func (ctx *Context) Ctx() context.Context {
-	return ctx.Context
 }
 
 func (ctx *Context) Command() Value {

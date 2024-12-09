@@ -1,4 +1,4 @@
-package goredis
+package resp
 
 const (
 	STRING  = '+'

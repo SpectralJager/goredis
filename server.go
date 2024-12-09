@@ -1,4 +1,4 @@
-package goredis
+package resp
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 type Handler func(ctx Context) Value
 type ServerOption func(s *Server)
 
-func WriteResp(w io.Writer, val Resp) error {
+func WriteResp(w io.Writer, val Value) error {
 	bytes := val.Marshall()
 	_, err := w.Write(bytes)
 	if err != nil {
@@ -28,11 +28,7 @@ type Server struct {
 
 func NewServer(opts ...ServerOption) *Server {
 	server := &Server{
-		handlers: map[string]Handler{
-			"COMMAND": func(Context) Value {
-				return StringValue("OK")
-			},
-		},
+		handlers: map[string]Handler{},
 	}
 	for _, opt := range opts {
 		opt(server)
@@ -49,20 +45,25 @@ func (s *Server) Start(address string) error {
 		return fmt.Errorf("can't start listening on tcp: %w", err)
 	}
 	log.Printf("start listening on %s...\n", address)
-	conn, err := l.Accept()
-	if err != nil {
-		return fmt.Errorf("can't accept connection: %w", err)
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			return fmt.Errorf("can't accept connection: %w", err)
+		}
+		go s.handle(conn)
 	}
-	defer conn.Close()
+}
 
+func (s *Server) handle(conn net.Conn) {
+	defer conn.Close()
 	for {
 		resp := NewResp(conn)
 		val, err := resp.Read()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
-				return fmt.Errorf("connection closed")
+				return
 			}
-			return err
+			log.Fatal(err.Error())
 		}
 		if val.typ != ARRAY {
 			err := fmt.Errorf("wrong type of request body: expected array, got %s\n", string(val.typ))

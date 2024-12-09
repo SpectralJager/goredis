@@ -1,4 +1,4 @@
-package goredis
+package resp
 
 import (
 	"fmt"
