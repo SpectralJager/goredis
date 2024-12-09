@@ -20,6 +20,13 @@ func StringValue(str string) Value {
 	}
 }
 
+func BulkValue(str string) Value {
+	return Value{
+		typ: BULK,
+		str: str,
+	}
+}
+
 func IntegerValue(num int) Value {
 	return Value{
 		typ: INTEGER,
@@ -31,6 +38,13 @@ func ErrorValue(err error) Value {
 	return Value{
 		typ: ERROR,
 		str: err.Error(),
+	}
+}
+
+func ArrayValue(values ...Value) Value {
+	return Value{
+		typ:   ARRAY,
+		array: values,
 	}
 }
 

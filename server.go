@@ -10,22 +10,26 @@ import (
 	"strings"
 )
 
-type Handler func(ctx context.Context, args []Value) Value
+type Handler func(ctx Context) Value
+type ServerOption func(s *Server)
 
 type Server struct {
 	handlers map[string]Handler
 }
 
-func NewServer() *Server {
-	return &Server{
+func NewServer(opts ...ServerOption) *Server {
+	server := &Server{
 		handlers: map[string]Handler{
-			"COMMAND": func(ctx context.Context, args []Value) Value {
+			"COMMAND": func(Context) Value {
 				return StringValue("OK")
 			},
 		},
 	}
+	for _, opt := range opts {
+		opt(server)
+	}
+	return server
 }
-
 func (s *Server) Command(command string, handler Handler) {
 	s.handlers[strings.ToUpper(command)] = handler
 }
@@ -71,6 +75,9 @@ func (s *Server) Start(address string) error {
 			WriteValue(conn, ErrorValue(err))
 			continue
 		}
-		WriteValue(conn, handler(context.TODO(), val.array[1:]))
+		WriteValue(conn, handler(Context{
+			command: val,
+			Context: context.TODO(),
+		}))
 	}
 }
